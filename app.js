@@ -1,7 +1,8 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-let items =["Wake up", "eat" , "Sleep"];
-let workItems= [];
+const mongoose = require("mongoose");
+// let items =["Wake up", "eat" , "Sleep"];
+// let workItems= [];
 
 const app = express();
 
@@ -11,20 +12,53 @@ app.use(express.static("public"));
 
 app.set("view engine", "ejs");
 
-app.get("/", function(req, res) {
-  let today = new Date();
+mongoose.connect("mongodb://localhost:27017/todolistDB");
 
+const itemsSchema = {
+  name: String
+};
 
-  let options = {
-    weekday: "long",
-    day: "numeric",
-    month: "long"
-  };
+const Item = mongoose.model("Item", itemsSchema);
 
-  let day = today.toLocaleDateString("en-US", options);
-
-  res.render("list", {listTitle: day, newListItems: items});
+const item1 = new Item({
+  name: "Welcome To My Todo list"
 });
+
+const item2 = new Item({
+  name: "Hit the + button to add a new item"
+});
+
+const item3 = new Item({
+  name: "<-- Hit this to delete an item"
+});
+
+
+const defaultItems = [item1, item2, item3];
+
+Item.insertMany(defaultItems, function(err){
+  if (err){
+    console.log(err);
+  }else{
+    console.log("Items successfully entered");
+  }
+});
+
+app.get("/", function(req, res) {
+  // let today = new Date();
+  //
+  //
+  // let options = {
+  //   weekday: "long",
+  //   day: "numeric",
+  //   month: "long"
+  // };
+  //
+  // let day = today.toLocaleDateString("en-US", options);
+
+  res.render("list", {listTitle: "Today", newListItems: items});
+});
+
+
 app.post("/",function(req, res){
   let item = req.body.newItem;
   if(req.body.list === "Work"){
